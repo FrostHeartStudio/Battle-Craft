@@ -1,0 +1,492 @@
+
+* {
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  background: #111820;
+  font-family: Arial, sans-serif;
+  color: white;
+}
+
+#game {
+  position: fixed;
+  inset: 0;
+}
+
+canvas {
+  display: block;
+}
+
+#menu {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+    135deg, #101d2a, #263b50, #101820
+  );
+  z-index: 10;
+}
+
+.menu-box {
+  position:relative; width:min(94vw,850px); min-height:430px; display:flex; align-items:center; gap:24px; text-align: center;
+  padding: 28px;
+  background: rgba(0,0,0,.55);
+  border: 2px solid #348cff;
+  border-radius: 18px;
+  box-shadow: 0 0 35px #1768aa66;
+}
+
+.menu-box h1 {
+  font-size: 38px;
+  margin: 0;
+  color: #48a4ff;
+  text-shadow: 0 0 15px #168bff;
+}
+
+.menu-box h2 {
+  margin: 8px 0;
+  letter-spacing: 5px;
+}
+
+.menu-box p {
+  color: #ccc;
+}
+
+#lobbyPreview { width:280px; height:320px; flex:0 0 280px; background:radial-gradient(circle,#294b70,#101925 70%); border-radius:14px; }
+.lobby-copy { flex:1; text-align:left; }
+#startBtn { position:absolute; right:25px; bottom:22px; padding: 16px 48px; margin: 0;
+  font-size: 20px;
+  font-weight: bold;
+  background: #167cff;
+  color: white;
+  border: 0;
+  border-radius: 8px;
+}
+
+.menu-info { margin-bottom:65px; font-size: 12px;
+  color: #aaa;
+}
+
+#hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+#minimap {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 150px;
+  height: 150px;
+  border: 2px solid white;
+  background: #101820;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+#status {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  background: #0009;
+  padding: 8px 20px;
+  border-radius: 8px;
+}
+
+#timer {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+#score {
+  font-size: 14px;
+}
+
+#health {
+  position: absolute;
+  bottom: 25px;
+  left: 25px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: bold;
+}
+
+.hp-bg {
+  width: 150px;
+  height: 14px;
+  background: #444;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+#hpFill {
+  width: 100%;
+  height: 100%;
+  background: #20e65c;
+}
+
+#ammo {
+  position: absolute;
+  bottom: 25px;
+  right: 30px;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+#controls {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+#joystick {
+  position: absolute;
+  bottom: 35px;
+  left: 35px;
+  width: 110px;
+  height: 110px;
+  background: #ffffff25;
+  border: 2px solid #ffffff55;
+  border-radius: 50%;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+#joyKnob {
+  position: absolute;
+  width: 45px;
+  height: 45px;
+  left: 30px;
+  top: 30px;
+  border-radius: 50%;
+  background: #ffffffaa;
+}
+
+#fireBtn,
+#reloadBtn {
+  position: absolute;
+  pointer-events: auto;
+  border: 2px solid #ffffff55;
+  color: white;
+  font-weight: bold;
+  border-radius: 50%;
+  touch-action: none;
+}
+
+#fireBtn {
+  right: 35px;
+  bottom: 45px;
+  width: 85px;
+  height: 85px;
+  background: #e5393988;
+}
+
+#reloadBtn {
+  right: 135px;
+  bottom: 35px;
+  width: 65px;
+  height: 65px;
+  background: #333b;
+}
+
+#crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 28px;
+  color: white;
+  text-shadow: 0 0 5px black;
+}
+
+#message {
+  position: absolute;
+  top: 35%;
+  width: 100%;
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  color: #ffdb55;
+}
+
+@media (orientation: portrait) {
+  #menu::after {
+    content: "Putar perangkat ke landscape";
+    position: absolute;
+    bottom: 20px;
+    color: #aaa;
+  }
+}
+
+#killScore {
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+  margin-top: 3px;
+  white-space: nowrap;
+}
+
+#rotateNotice {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: rgba(5, 10, 18, .94);
+  color: white;
+}
+
+.rotate-card {
+  font-size: 22px;
+  line-height: 1.7;
+  padding: 25px;
+}
+
+.rotate-card:first-line {
+  font-size: 48px;
+}
+
+@media (orientation: portrait) {
+  .menu-box { flex-direction:column; min-height:0; padding:16px; gap:8px; }
+  #lobbyPreview { width:170px; height:190px; flex-basis:190px; }
+  .lobby-copy { text-align:center; }
+  .menu-box h1 {font-size:28px;}
+  #startBtn {right:12px;bottom:12px;padding:12px 28px;}
+  .menu-info {margin-bottom:55px;}
+}
+
+#jumpBtn {
+  position:absolute; right:38px; bottom:145px; width:68px; height:68px;
+  pointer-events:auto; touch-action:none; border-radius:50%;
+  border:2px solid #ffffff66; background:#287bd988; color:white; font-weight:bold;
+}
+#damageOverlay { position:absolute; inset:0; pointer-events:none; opacity:0; background:radial-gradient(ellipse at center, transparent 35%, #ff101055 100%); transition:opacity .06s; }
+#respawnOverlay { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:#050910a8; text-align:center; color:#fff; font-size:24px; font-weight:900; text-shadow:0 2px 8px #000; }
+#respawnOverlay strong { display:inline-block; font-size:68px; color:#ffcf48; line-height:1.2; }
+#respawnOverlay small { display:block; font-size:15px; }
+
+/* Entry screen dan lobby sinematik tanpa panel kotak */
+#entryScreen{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;text-align:center;background:radial-gradient(ellipse at 50% 35%,#234c70 0%,#101d2b 48%,#050a10 100%);overflow:hidden}
+#entryScreen:before{content:"";position:absolute;width:65vw;height:65vw;border:1px solid #4ca8ff22;border-radius:50%;box-shadow:0 0 0 8vw #4ca8ff08,0 0 0 16vw #4ca8ff05}
+.entry-content{position:relative;z-index:1}
+.entry-logo{font-size:clamp(48px,10vw,100px);font-weight:1000;line-height:.82;letter-spacing:8px;color:#eaf6ff;text-shadow:0 0 25px #168cff88}
+.entry-logo span{color:#2698ff}
+.entry-content p{letter-spacing:5px;color:#a9c5df;margin:28px 0 45px}
+#enterBtn{border:1px solid #70bdff;background:linear-gradient(135deg,#168cff,#0754b5);color:white;font-size:20px;font-weight:900;letter-spacing:3px;padding:16px 58px;border-radius:5px;box-shadow:0 0 28px #168cff55}
+#menu{background:radial-gradient(ellipse at 50% 45%,#213c58 0%,#101a27 55%,#050910 100%)}
+.menu-box{width:100%;height:100%;min-height:0;max-width:none;border:0;border-radius:0;padding:0;background:transparent;box-shadow:none;display:block}
+#lobbyPreview{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(48vw,520px);height:min(80vh,620px);background:transparent;border-radius:0}
+.lobby-copy{position:absolute;left:7%;top:12%;width:auto;max-width:40%;text-align:left;text-shadow:0 3px 14px #000}
+.menu-box h1{font-size:clamp(32px,5vw,65px);letter-spacing:3px}.menu-box h2{font-size:clamp(15px,2vw,25px);letter-spacing:8px;color:#a9d7ff}.menu-box p{letter-spacing:2px}
+#startBtn{right:5%;bottom:7%;padding:20px 58px;border-radius:5px;font-size:clamp(18px,2vw,26px);letter-spacing:2px;box-shadow:0 8px 25px #0066cc66}
+.menu-info{position:absolute;left:7%;bottom:8%;margin:0;color:#94a8bc}
+#damageNumbers{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.damage-pop{position:absolute;color:#ffe45c;font-size:22px;font-weight:1000;text-shadow:0 2px 4px #000,0 0 8px #ff4b00;transform:translate(-50%,-50%);animation:damageRise .65s ease-out forwards}
+@keyframes damageRise{to{transform:translate(-50%,-100px) scale(1.25);opacity:0}}
+#message{top:22%;font-size:25px;text-shadow:0 3px 8px #000}
+@media(orientation:portrait){.lobby-copy{left:5%;top:5%;max-width:90%}#lobbyPreview{width:75vw;height:60vh;top:53%}#startBtn{right:5%;bottom:5%;padding:14px 32px}.menu-info{left:5%;bottom:6%;max-width:55%}}
+
+/* Lobby polish: full-screen composition, no panel frame, stable sizing */
+#menu{overflow:hidden;isolation:isolate}
+#menu::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#06101be8 0%,#06101b88 42%,transparent 75%),radial-gradient(circle at 55% 50%,#2389df22,transparent 45%);pointer-events:none}
+.menu-box{position:relative;z-index:1;width:100%;height:100%;display:block;min-height:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;overflow:hidden}
+#lobbyPreview{position:absolute;left:54%;top:50%;transform:translate(-50%,-50%);width:min(48vw,560px);height:min(84vh,680px);max-width:60vw;display:block;background:transparent;border:0;border-radius:0}
+.lobby-copy{position:absolute;left:7%;top:16%;max-width:38%;width:38%;text-align:left}
+.menu-box h1{font-size:clamp(30px,5.4vw,72px);line-height:1.05;color:#eaf6ff;text-shadow:0 5px 24px #000}
+.menu-box h2{font-size:clamp(14px,2vw,27px);letter-spacing:clamp(3px,.7vw,9px);color:#55b2ff;margin:12px 0}
+.menu-box p{font-size:clamp(11px,1.3vw,16px);color:#b9cde0}
+.menu-info{position:absolute;left:7%;bottom:9%;margin:0;font-size:clamp(10px,1vw,13px);max-width:38%;color:#a5bdd4}
+#startBtn{position:absolute;right:5%;bottom:6%;min-width:180px;padding:18px 48px;background:linear-gradient(135deg,#2ba0ff,#0758c9);border:1px solid #8ed0ff;border-radius:7px;font-size:clamp(17px,2vw,25px);font-weight:900;letter-spacing:2px;box-shadow:0 8px 30px #007bff55}
+#startBtn:active,#enterBtn:active{transform:scale(.97)}
+#damageNumbers{z-index:8}
+.damage-pop{font-size:clamp(20px,2.5vw,30px);-webkit-text-stroke:.5px #492000;white-space:nowrap;z-index:9}
+#game, #game canvas{touch-action:none}
+@media(max-width:700px){
+ .lobby-copy{left:5%;top:11%;width:43%;max-width:43%}
+ #lobbyPreview{left:60%;width:58vw;height:78vh;max-width:65vw}
+ .menu-info{left:5%;bottom:8%;max-width:45%}
+ #startBtn{right:4%;bottom:5%;min-width:130px;padding:15px 26px}
+}
+@media(orientation:portrait){
+ .lobby-copy{left:5%;top:6%;width:90%;max-width:90%;text-align:center}
+ #lobbyPreview{left:50%;top:55%;width:75vw;height:62vh;max-width:90vw}
+ .menu-info{left:5%;bottom:5%;max-width:48%;text-align:left}
+ #startBtn{right:5%;bottom:5%;min-width:120px;padding:13px 25px}
+}
+
+/* Final lobby + HUD pass */
+#menu{background:radial-gradient(ellipse at 62% 52%,#1a4165 0%,#0c1724 52%,#03070d 100%)}
+#menu::before{background:linear-gradient(90deg,#06101bf2 0%,#06101b99 40%,transparent 76%),radial-gradient(circle at 65% 50%,#278fe733,transparent 45%)}
+.lobby-top{position:absolute;top:5%;left:6%;right:6%;display:flex;align-items:center;justify-content:space-between;z-index:3}
+.lobby-brand{font-size:clamp(16px,2vw,25px);font-weight:1000;letter-spacing:3px;color:#eaf6ff}.lobby-brand span{color:#299cff}
+.lobby-tag{font-size:clamp(9px,1vw,13px);letter-spacing:3px;color:#8daecb;border:1px solid #4e789955;padding:9px 14px;border-radius:3px}
+.lobby-hero{position:absolute;left:52%;top:51%;width:min(54vw,650px);height:min(84vh,700px);transform:translate(-50%,-50%);display:flex;align-items:flex-end;justify-content:center}
+#lobbyPreview{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;transform:none!important;left:0!important;top:0!important;background:transparent!important;z-index:2}
+.podium{position:absolute;bottom:2%;width:48%;height:9%;z-index:1;background:linear-gradient(180deg,#50718b,#172c40 65%,#0b1725);clip-path:polygon(12% 0,88% 0,100% 100%,0 100%);border-top:3px solid #8bcfff;box-shadow:0 18px 45px #0009}
+.lobby-copy{left:7%!important;top:25%!important;width:34%!important;max-width:34%!important}
+.lobby-kicker{font-size:12px;letter-spacing:5px;color:#48aaff;font-weight:800;margin-bottom:15px}
+.menu-box h1{font-size:clamp(34px,5.2vw,70px);line-height:1.05;letter-spacing:1px}
+.menu-box h2{font-size:clamp(15px,2vw,25px);letter-spacing:7px;margin:12px 0 20px}
+.menu-box p{font-size:clamp(12px,1.4vw,17px);letter-spacing:1px}
+.menu-box p b{color:#53b4ff;margin:0 9px}
+.lobby-info{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}
+.lobby-info span{font-size:10px;letter-spacing:1px;padding:8px 10px;border:1px solid #5382a755;background:#10243b88;color:#b7d7f1;border-radius:3px}
+#startBtn{right:6%!important;bottom:7%!important;min-width:205px;padding:19px 26px!important;display:flex;align-items:center;justify-content:space-between;gap:25px}
+#startBtn span{font-size:22px}
+#health{left:50%!important;transform:translateX(-50%);bottom:22px!important;background:#07111dcc;border:1px solid #ffffff24;border-radius:7px;padding:10px 14px;gap:9px;min-width:230px;justify-content:center}
+.hp-label{font-size:12px;color:#a8c7df}.hp-bg{width:130px;height:12px}.hp-bg #hpFill{transition:width .12s linear}
+#ammo{bottom:25px;right:25px;background:#07111dcc;padding:9px 14px;border:1px solid #ffffff24;border-radius:6px}
+#crosshair{width:22px;height:22px;font-size:0;color:transparent;text-shadow:none;display:flex;align-items:center;justify-content:center}
+#crosshair i{position:absolute;width:15px;height:15px;border:1px solid #ffffffaa;border-radius:50%;box-shadow:0 0 2px #000}
+#crosshair b{position:absolute;width:3px;height:3px;border:1px solid #fff;background:#ffffff33;border-radius:50%}
+#crosshair.scoped i{width:42px;height:42px;border-color:#e8f7ff;box-shadow:0 0 0 1px #0008}
+#scopeBtn{position:absolute;right:145px;bottom:120px;width:66px;height:50px;pointer-events:auto;touch-action:none;border:1px solid #ffffff66;border-radius:8px;background:#122a42cc;color:#d8edff;font-size:11px;font-weight:900;letter-spacing:1px}
+#scopeBtn.active{background:#198cff;color:white;border-color:#bde6ff;box-shadow:0 0 14px #168cff77}
+#matchResult{position:absolute;inset:0;z-index:30;align-items:center;justify-content:center;background:#020812c9;backdrop-filter:blur(7px);pointer-events:auto}
+.result-card{width:min(90vw,520px);padding:clamp(22px,4vw,42px);text-align:center;background:linear-gradient(145deg,#142b42,#08121f);border:1px solid #4ba8ff88;border-radius:12px;box-shadow:0 20px 80px #0009}
+.result-kicker{letter-spacing:5px;color:#86bce8;font-size:12px;font-weight:900}
+#resultTitle{font-size:clamp(27px,5vw,48px);margin:17px 0;text-shadow:0 0 22px currentColor}
+#resultTitle.win{color:#59c4ff}#resultTitle.lose{color:#ff6868}#resultTitle.draw{color:#ffd96a}
+#resultScore{font-size:20px;font-weight:900;color:#eaf5ff;letter-spacing:2px}
+.result-actions{display:flex;gap:12px;margin-top:30px;justify-content:center;flex-wrap:wrap}
+.result-actions button{border:1px solid #5f9ec9;background:#122b43;color:#e8f5ff;padding:13px 17px;border-radius:5px;font-weight:900;letter-spacing:1px}
+.result-actions #playAgainBtn{background:linear-gradient(135deg,#168cff,#0754b5);border-color:#8ed0ff}
+@media(max-width:700px){.lobby-top{top:4%;left:5%;right:5%}.lobby-hero{left:58%;top:53%;width:62vw;height:72vh}.lobby-copy{left:5%!important;top:23%!important;width:43%!important;max-width:43%!important}.lobby-kicker{font-size:9px;letter-spacing:3px}.menu-box h1{font-size:clamp(24px,6vw,42px)}.menu-box h2{font-size:12px;letter-spacing:3px}.lobby-info{gap:5px;margin-top:15px}.lobby-info span{font-size:8px;padding:6px}.lobby-tag{letter-spacing:1px;padding:7px}.podium{width:56%;height:8%}#startBtn{min-width:145px!important;padding:14px 18px!important}#scopeBtn{right:115px;bottom:115px;width:58px;height:45px}#health{bottom:14px!important;min-width:195px;padding:8px 10px}.hp-bg{width:105px}#ammo{right:12px;bottom:14px;font-size:18px}}
+/* Lobby selection controls */
+.lobby-selects{display:flex;flex-direction:column;gap:12px;margin-top:20px;max-width:360px}
+.lobby-selects label{display:flex;flex-direction:column;gap:7px;color:#8fcaff;font-size:10px;font-weight:900;letter-spacing:2px}
+#mapSelect{width:100%;background:#0b1a2b;color:#eaf6ff;border:1px solid #3e79a8;border-radius:5px;padding:10px 12px;font-weight:800;letter-spacing:1px}
+.weapon-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.weapon-choice{min-width:0;padding:10px 5px;background:#0b1a2b;color:#c6d9eb;border:1px solid #34536f;border-radius:5px;font-size:10px;font-weight:900;letter-spacing:.5px}
+.weapon-choice small{display:block;margin-top:5px;font-size:8px;letter-spacing:0;color:#8caac5;font-weight:700}
+.weapon-choice.active{background:linear-gradient(145deg,#147bd0,#0b3d79);border-color:#70c6ff;color:#fff;box-shadow:0 0 15px #168cff44}
+.damage-pop.headshot{color:#ff5e4b;font-size:clamp(24px,3vw,36px);text-shadow:0 2px 5px #000,0 0 12px #ff2600}
+@media(max-width:700px){.lobby-selects{margin-top:10px;gap:8px;max-width:300px}.lobby-selects label{font-size:8px}.weapon-choice{padding:7px 3px;font-size:8px}.weapon-choice small{font-size:7px}#mapSelect{padding:7px}}
+
+/* PATCH: selection panels visibly arranged in lobby (override legacy menu rules) */
+#menu{display:none;position:fixed;inset:0;width:100vw;height:100dvh;flex-direction:column;overflow:hidden}
+.lobby-copy{z-index:5!important;left:5%!important;top:15%!important;width:42%!important;max-width:42%!important;right:auto!important}
+.lobby-selects{display:flex!important;position:relative;z-index:8;width:min(100%,420px);max-width:100%!important;margin-top:18px!important;padding:12px;background:#071321d9;border:1px solid #477aa455;border-radius:10px;box-sizing:border-box}
+.lobby-selects label{display:flex!important;visibility:visible!important;opacity:1!important;color:#8fcaff!important}
+#mapSelect{display:block!important;visibility:visible!important;opacity:1!important;min-height:38px;box-sizing:border-box}
+.weapon-options{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;width:100%}
+.weapon-choice{display:block!important;visibility:visible!important;opacity:1!important;min-height:52px;cursor:pointer;pointer-events:auto}
+#startBtn{z-index:12!important;pointer-events:auto!important}
+@media(max-width:700px){.lobby-copy{top:12%!important;width:46%!important;max-width:46%!important}.lobby-selects{padding:8px;margin-top:10px!important}.weapon-choice{min-height:44px}}
+@media(orientation:portrait){.lobby-copy{top:8%!important;width:90%!important;max-width:90%!important}.lobby-selects{max-width:360px!important;margin-left:auto;margin-right:auto}}
+
+/* Clean compact lobby layout: weapon first, map second, small Start button */
+#menu{background:radial-gradient(ellipse at 72% 48%,#193e5b 0%,#0b1725 52%,#03070d 100%)}
+.lobby-copy{top:17%!important;left:5%!important;width:38%!important;max-width:38%!important}
+.lobby-info{margin-top:12px!important;gap:5px!important}
+.lobby-info span{padding:5px 7px!important;font-size:9px!important}
+.lobby-selects{margin-top:12px!important;padding:8px!important;gap:8px!important;width:min(100%,330px)!important;background:#071321b8!important;border:1px solid #477aa433!important;border-radius:7px!important}
+.lobby-selects label{gap:4px!important;font-size:9px!important;letter-spacing:1.5px!important}
+.weapon-options{gap:5px!important}
+.weapon-choice{min-height:0!important;padding:7px 3px!important;font-size:9px!important;border-radius:4px!important}
+.weapon-choice small{font-size:7px!important;margin-top:3px!important}
+#mapSelect{min-height:30px!important;padding:6px 8px!important;font-size:10px!important;border-radius:4px!important}
+#startBtn{min-width:0!important;width:auto!important;padding:10px 16px!important;gap:12px!important;font-size:12px!important;letter-spacing:1px!important;border-radius:5px!important;bottom:5%!important;right:5%!important}
+#startBtn span{font-size:15px!important}
+@media(max-width:760px){
+ .lobby-copy{top:12%!important;left:4%!important;width:43%!important;max-width:43%!important}
+ .lobby-selects{width:100%!important;margin-top:8px!important;padding:6px!important}
+ .weapon-choice{padding:6px 2px!important;font-size:8px!important}
+ .weapon-choice small{font-size:6.5px!important}
+ #mapSelect{min-height:27px!important;padding:4px 6px!important}
+ #startBtn{padding:9px 13px!important;font-size:10px!important;bottom:4%!important;right:4%!important}
+ .lobby-hero{left:65%!important;width:55vw!important;height:68vh!important}
+}
+
+/* Final compact lobby: selection stack directly above the Start button */
+#menu .lobby-selects{position:absolute!important;right:4.5%!important;bottom:14.5%!important;left:auto!important;top:auto!important;width:min(290px,34vw)!important;max-width:none!important;margin:0!important;padding:8px!important;display:flex!important;flex-direction:column!important;gap:7px!important;background:#071321dd!important;border:1px solid #4a85b655!important;border-radius:7px!important;z-index:15!important}
+#menu .lobby-selects label{font-size:9px!important;gap:4px!important}
+#menu .weapon-options{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:4px!important}
+#menu .weapon-choice{font-size:8px!important;padding:7px 2px!important;min-height:0!important}
+#menu .weapon-choice small{font-size:6px!important}
+#menu #mapSelect{min-height:27px!important;padding:5px 7px!important}
+#menu #startBtn{right:4.5%!important;bottom:4.5%!important;min-width:0!important;padding:9px 15px!important;font-size:11px!important;gap:10px!important;border-radius:5px!important}
+#menu #startBtn span{font-size:13px!important}
+/* Ammo counter stays on the player's left side, away from health */
+#ammo{left:24px!important;right:auto!important;bottom:118px!important;padding:7px 10px!important;font-size:14px!important;min-width:75px;text-align:center;border-radius:5px!important}
+@media(max-width:760px){
+ #menu .lobby-selects{right:3%!important;bottom:13%!important;width:min(245px,38vw)!important;padding:6px!important}
+ #menu #startBtn{right:3%!important;bottom:3.5%!important;padding:8px 12px!important}
+ #ammo{left:12px!important;bottom:112px!important;font-size:12px!important;padding:6px 8px!important}
+}
+
+/* HUD readability: compact minimap + larger labeled ammo block */
+#minimap{width:92px!important;height:92px!important;top:9px!important;left:9px!important;border-width:1px!important;border-radius:5px!important}
+#minimap canvas{width:100%!important;height:100%!important;display:block}
+#ammo{left:12px!important;right:auto!important;bottom:116px!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:4px!important;min-width:108px!important;padding:10px 12px!important;background:#07111de8!important;border:1px solid #7ba4c766!important;border-radius:7px!important;box-shadow:0 5px 20px #0005!important}
+#ammoWeapon{font-size:12px!important;letter-spacing:1.5px!important;color:#8ed2ff!important;font-weight:900!important}
+#ammoCount{font-size:22px!important;line-height:1.05!important;color:#fff!important;font-weight:900!important;font-variant-numeric:tabular-nums}
+#scopeBtn{width:58px!important;height:58px!important;border-radius:50%!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:0!important;background:#0b1b2dcc!important;border:1px solid #b9d9ef99!important;box-shadow:0 4px 12px #0005!important}
+#scopeBtn.active{border-radius:50%!important}
+@media(max-width:760px){#minimap{width:72px!important;height:72px!important}#ammo{left:9px!important;bottom:100px!important;min-width:92px!important;padding:7px 9px!important}#ammoWeapon{font-size:10px!important}#ammoCount{font-size:18px!important}#scopeBtn{width:48px!important;height:48px!important}}
+
+/* HUD tune: 100 HP, ammo lowered, compact status row */
+#health{min-width:190px!important;padding:7px 10px!important;background:#07111d99!important;border-radius:5px!important}
+#health .hp-bg{width:110px!important;height:10px!important}
+#status{display:flex!important;align-items:center!important;justify-content:center!important;gap:10px!important;padding:5px 10px!important;background:#0007!important;border-radius:5px!important}
+#timer{font-size:clamp(13px,2vw,18px)!important;order:2!important;min-width:44px;text-align:center}
+#killScore{font-size:clamp(10px,1.5vw,13px)!important;margin:0!important;order:1!important;color:#65baff!important}
+#score{font-size:clamp(9px,1.2vw,11px)!important;order:3!important;color:#ff7777!important}
+#ammo{bottom:62px!important;left:12px!important;right:auto!important;padding:8px 10px!important}
+@media(max-width:760px){#status{gap:6px!important;padding:4px 7px!important}#killScore{font-size:9px!important}#timer{font-size:13px!important}#score{font-size:8px!important}#ammo{bottom:58px!important;left:9px!important}}
+
+/* Match HUD exact order: KILL BIRU | TIMER | KILL MERAH */
+#status{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:center!important;gap:clamp(7px,1.4vw,18px)!important;white-space:nowrap!important}
+.team-kill{font-size:clamp(10px,1.35vw,14px)!important;font-weight:900!important;letter-spacing:.35px!important;display:flex!important;align-items:center!important;gap:5px!important}
+.blue-kill{color:#35a9ff!important}
+.red-kill{color:#ff4545!important}
+#timer{order:2!important;color:#fff!important}
+#blueKill{order:1!important}
+#redKill{order:3!important}
+#score,#killScore{display:none!important}
+@media(max-width:760px){.team-kill{font-size:clamp(8px,2vw,11px)!important;gap:3px!important}#status{gap:6px!important}}
+/* HUD final format: BIRU (score) | (time) | (score) MERAH */
+#blueKill,#redKill{display:flex!important;align-items:center!important;gap:5px!important}
+#blueKill{color:#35a9ff!important}
+#blueScore{color:#35a9ff!important}
+#redKill{color:#ff4545!important}
+#redScore{color:#ff4545!important}
+
+/* Ammo HUD: one horizontal line, separated above HP */
+#ammo{position:fixed!important;left:50%!important;right:auto!important;transform:translateX(-50%)!important;bottom:78px!important;display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:center!important;gap:10px!important;min-width:0!important;width:max-content!important;padding:7px 12px!important;background:#07111dcc!important;border:1px solid #ffffff24!important;border-radius:6px!important;white-space:nowrap!important}
+#ammoWeapon{font-size:12px!important;letter-spacing:1px!important;color:#8ed2ff!important;font-weight:900!important}
+#ammoWeapon::after{content:"|";color:#8ba4b7;margin-left:10px;font-weight:500}
+#ammoCount{font-size:16px!important;line-height:1!important;color:#fff!important;font-weight:900!important;font-variant-numeric:tabular-nums}
+@media(max-width:760px){#ammo{bottom:70px!important;padding:6px 10px!important;gap:8px!important}#ammoWeapon{font-size:10px!important}#ammoWeapon::after{margin-left:8px}#ammoCount{font-size:14px!important}}
+
+/* Ammo rapat di atas HP, sisakan celah tipis */
+#ammo{bottom:61px!important;gap:7px!important;padding:6px 10px!important}
+@media(max-width:760px){#ammo{bottom:58px!important;padding:5px 8px!important;gap:6px!important}}
+/* KDA dan tombol pause di kanan atas */
+#topRightHUD{position:fixed;top:12px;right:12px;z-index:30;display:flex;align-items:center;gap:8px}
+#kdaText{background:#07111dcc;border:1px solid #ffffff28;border-radius:6px;padding:7px 10px;color:#e8f5ff;font-size:12px;font-weight:900;letter-spacing:.4px;font-variant-numeric:tabular-nums}
+#pauseBtn{width:34px;height:34px;border-radius:7px;border:1px solid #ffffff55;background:#07111de8;color:#fff;font-size:17px;font-weight:900;pointer-events:auto}
+#pauseOverlay{position:fixed;inset:0;z-index:100;background:#000a;display:flex;align-items:center;justify-content:center}
+.pause-card{min-width:230px;padding:24px;background:#0b1724;border:1px solid #4b8fbd;border-radius:12px;text-align:center;color:white;display:flex;flex-direction:column;gap:12px}
+.pause-card h2{margin:0 0 8px;letter-spacing:2px}
+.pause-card button{padding:12px;border:1px solid #438ac0;background:#15334b;color:white;border-radius:7px;font-weight:900}
+@media(max-width:760px){#topRightHUD{top:8px;right:8px;gap:5px}#kdaText{font-size:10px;padding:6px 7px}#pauseBtn{width:30px;height:30px;font-size:15px}}
+
+/* Pause overlay: clickable despite HUD parent being pointer-events:none */
+#pauseOverlay{pointer-events:auto!important;z-index:200!important;touch-action:auto!important}
+#pauseOverlay .pause-card{pointer-events:auto!important;position:relative;z-index:201}
+#pauseOverlay button{pointer-events:auto!important;touch-action:manipulation;cursor:pointer;position:relative;z-index:202}

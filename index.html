@@ -1,0 +1,66 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0,
+    maximum-scale=1.0,user-scalable=no">
+  <title>Battle Craft FPS</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="game"></div>
+
+  <div id="entryScreen"><div class="entry-content"><div class="entry-logo">BATTLE<br><span>CRAFT</span></div><p>TACTICAL FPS ARENA</p><button id="enterBtn">MASUK</button></div></div>
+
+  <div id="menu" style="display:none">
+    <div class="lobby-top"><div class="lobby-brand">BATTLE <span>CRAFT</span></div><div class="lobby-tag">TACTICAL FPS / 5V5</div></div>
+    <div class="lobby-hero"><canvas id="lobbyPreview" width="520" height="620"></canvas><div class="podium"></div></div>
+    <div class="lobby-copy"><div class="lobby-kicker">ARENA COMBAT</div><h1>BATTLE CRAFT</h1><h2>FPS ARENA</h2><p>BLUE TEAM <b>VS</b> RED TEAM</p><div class="lobby-info"><span>5 vs 5</span><span>05:00 MATCH</span><span>∞ AMMO RESERVE</span></div>
+      </div>
+    <div class="lobby-selects"><label>SENJATA<div class="weapon-options"><button class="weapon-choice active" data-weapon="pistol">PISTOL<small>30 MAG · 25 DMG</small></button><button class="weapon-choice" data-weapon="sniper">SNIPER<small>2 MAG · 50 DMG</small></button><button class="weapon-choice" data-weapon="shotgun">SHOTGUN<small>5 MAG · 30 DMG</small></button></div></label><label>MAP<select id="mapSelect"><option value="city">KOTA</option><option value="forest">HUTAN</option><option value="desert">GURUN</option></select></label></div>
+    <button id="startBtn">MULAI <span>▶</span></button>
+  </div>
+
+  <div id="hud" style="display:none">
+    <div id="minimap">
+      <canvas id="mapCanvas" width="150" height="150"></canvas>
+    </div>
+
+    <div id="topRightHUD"><div id="kdaText">K/D/A 0/0/0</div><button id="pauseBtn" aria-label="Pause">Ⅱ</button></div>
+    <div id="status">
+      <div id="blueKill" class="team-kill blue-kill">BIRU <span id="blueScore">0</span></div>
+      <div id="timer">05:00</div>
+      <div id="redKill" class="team-kill red-kill"><span id="redScore">0</span> MERAH</div>
+    </div>
+
+    <div id="health"><span class="hp-label">HP</span><div class="hp-bg"><div id="hpFill"></div></div><span id="hpText">200</span></div>
+
+    <div id="ammo"><strong id="ammoWeapon">PISTOL</strong><span id="ammoCount">30 / ∞</span></div>
+
+    <div id="controls">
+      <div id="joystick">
+        <div id="joyKnob"></div>
+      </div>
+
+      <button id="jumpBtn">JUMP</button>
+      <button id="scopeBtn" aria-label="Scope">SCOPE</button>
+      <button id="fireBtn">FIRE</button>
+      <button id="reloadBtn">RELOAD</button>
+    </div>
+
+    <div id="pauseOverlay" style="display:none"><div class="pause-card"><h2>GAME PAUSED</h2><button id="resumeBtn">LANJUTKAN</button><button id="pauseLobbyBtn">KEMBALI KE LOBBY</button></div></div>
+    <div id="crosshair"><i></i><b></b></div>
+    <div id="damageOverlay"></div>
+    <div id="respawnOverlay" style="display:none"><div>RESPAWN<br><strong id="respawnCount">10</strong><small>detik</small></div></div>
+    <div id="message"></div><div id="damageNumbers"></div>
+    <div id="matchResult" style="display:none"><div class="result-card"><div class="result-kicker">MATCH SELESAI</div><h2 id="resultTitle">MENANG!</h2><p id="resultScore">BLUE 0 — 0 RED</p><div class="result-actions"><button id="backLobbyBtn">KEMBALI KE LOBBY</button><button id="playAgainBtn">MAIN LAGI ▶</button></div></div></div>
+  </div>
+
+  <div id="rotateNotice">
+    <div class="rotate-card">Game sedang menyesuaikan layar…</div>
+  </div>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
