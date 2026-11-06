@@ -39,11 +39,63 @@ function setupLobbyPreview() {
   lobbyScene.add(lobbyCharacter);
 }
 
+
+// Dedicated weapon selection screen and Three.js preview
+let weaponPreviewRenderer, weaponPreviewScene, weaponPreviewCamera, previewWeaponGroup;
+const weaponCatalog=[
+ {id:'pistol',name:'PISTOL',stats:'15 MAG · 20 DMG · 2s',kind:'pistol'},
+ {id:'sniper',name:'SNIPER',stats:'10 MAG · 30 DMG · 3s',kind:'sniper'},
+ {id:'shotgun',name:'SHOTGUN',stats:'2 MAG · 75 DMG · 3s',kind:'shotgun'},
+ {id:'revolver',name:'REVOLVER',stats:'7 MAG · 25 DMG · 2s',kind:'revolver'},
+ {id:'raygun',name:'RAYGUN',stats:'1 MAG · 100 DMG · 4s',kind:'raygun'},
+ {id:'death_sniper',name:'DEATH SNIPER',stats:'1 MAG · 150 DMG · 7.5s',kind:'death'}
+];
+function makePreviewWeapon(kind){
+ // Preview memakai builder model yang sama persis dengan viewmodel gameplay.
+ const type = kind === 'death' ? 'death_sniper' : kind;
+ const temp = new Weapons(weaponPreviewScene, weaponPreviewCamera, null);
+ temp.applyWeapon(type);
+ const model = temp.viewModel;
+ weaponPreviewCamera.remove(model);
+ temp.animator = null;
+ model.position.set(0, 0, 0);
+ model.rotation.set(0.12, -0.35, 0);
+ model.scale.setScalar(1.65);
+ model.traverse(o => { if(o.isMesh){o.frustumCulled=false; if(o.material){const mats=Array.isArray(o.material)?o.material:[o.material];mats.forEach(m=>{m.transparent=false;m.opacity=1;});}}});
+ return model;
+}
+function initWeaponScreen(){
+ const canvas=document.getElementById('weaponPreviewCanvas');if(!canvas||weaponPreviewRenderer)return;
+ weaponPreviewRenderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true});weaponPreviewRenderer.setPixelRatio(Math.min(devicePixelRatio,2));weaponPreviewRenderer.setSize(canvas.clientWidth||innerWidth,canvas.clientHeight||innerHeight,false);weaponPreviewRenderer.outputColorSpace=THREE.SRGBColorSpace;
+ weaponPreviewScene=new THREE.Scene();weaponPreviewCamera=new THREE.PerspectiveCamera(34,Math.max(1,canvas.clientWidth)/Math.max(1,canvas.clientHeight),.1,100);weaponPreviewCamera.position.set(0,1.1,6.5);weaponPreviewCamera.lookAt(0,0,0);weaponPreviewScene.add(weaponPreviewCamera);
+ weaponPreviewScene.add(new THREE.HemisphereLight(0xbfe5ff,0x142235,2.3));const key=new THREE.DirectionalLight(0xffffff,3);key.position.set(3,5,5);weaponPreviewScene.add(key);const rim=new THREE.PointLight(0x299dff,30,12);rim.position.set(-3,1,-2);weaponPreviewScene.add(rim);
+ previewWeaponGroup=new THREE.Group();weaponPreviewScene.add(previewWeaponGroup);selectPreviewWeapon(selectedWeapon);renderWeaponPreview();
+}
+function selectPreviewWeapon(id){
+ const item=weaponCatalog.find(w=>w.id===id)||weaponCatalog[0];selectedWeapon=id;
+ document.getElementById('weaponPreviewName').textContent=item.name;document.getElementById('weaponPreviewStats').textContent=item.stats;
+ document.querySelectorAll('.weapon-card').forEach(b=>b.classList.toggle('active',b.dataset.weapon===id));
+ if(previewWeaponGroup){previewWeaponGroup.clear();previewWeaponGroup.add(makePreviewWeapon(item.kind));}
+}
+function renderWeaponPreview(){if(!weaponPreviewRenderer)return;requestAnimationFrame(renderWeaponPreview);if(previewWeaponGroup&&document.getElementById('weaponScreen').classList.contains('open'))previewWeaponGroup.rotation.y+=.004;weaponPreviewRenderer.render(weaponPreviewScene,weaponPreviewCamera);}
+function openWeaponScreen(){const screen=document.getElementById('weaponScreen');screen.classList.add('open');screen.setAttribute('aria-hidden','false');initWeaponScreen();resizeWeaponPreview();}
+function closeWeaponScreen(){const screen=document.getElementById('weaponScreen');screen.classList.remove('open');screen.setAttribute('aria-hidden','true');}
+function resizeWeaponPreview(){if(!weaponPreviewRenderer)return;const c=document.getElementById('weaponPreviewCanvas'),w=c.clientWidth||innerWidth,h=c.clientHeight||innerHeight;weaponPreviewRenderer.setSize(w,h,false);weaponPreviewCamera.aspect=w/h;weaponPreviewCamera.updateProjectionMatrix();}
+function setupWeaponScreen(){
+ const list=document.getElementById('weaponList');list.innerHTML=weaponCatalog.map(w=>`<button class="weapon-card${w.id===selectedWeapon?' active':''}" data-weapon="${w.id}"><strong>${w.name}</strong><small>${w.stats}</small></button>`).join('');
+ list.querySelectorAll('.weapon-card').forEach(b=>b.addEventListener('click',()=>selectPreviewWeapon(b.dataset.weapon)));
+ document.getElementById('openWeaponsBtn').addEventListener('click',openWeaponScreen);document.getElementById('weaponBackBtn').addEventListener('click',closeWeaponScreen);
+ document.getElementById('useWeaponBtn').addEventListener('click',()=>{weapon.applyWeapon(selectedWeapon);closeWeaponScreen();});
+ addEventListener('resize',resizeWeaponPreview);
+}
+
 function init() {
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0x8eb6d8);
   scene.fog = new THREE.Fog(0x8eb6d8, 100, 260);
   camera = new THREE.PerspectiveCamera(75, innerWidth / innerHeight, 0.1, 500);
+  // Camera harus menjadi bagian scene agar child viewmodel (senjata first-person) ikut dirender.
+  scene.add(camera);
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(innerWidth, innerHeight);
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
@@ -53,13 +105,17 @@ function init() {
   renderer.toneMappingExposure = 1;
   gameElement.appendChild(renderer.domElement);
 
-  setupLobbyPreview();
+  // Lobby 3D preview dihapus sesuai permintaan.
   createMap(scene);
   player = new Player(scene, camera);
   player.onDeath = attackerTeam => { awardKill(attackerTeam); playerDeaths++; playerRespawnTimer = 10; };
   player.onDamage = () => { player.damageFlash = 0.3; };
   weapon = new Weapons(scene, camera, player);
-  weapon.onHit = (target, amount, killed, headshot=false) => { showDamageNumber(target.position, amount, headshot); if (killed) { playerKills++; showElimination(); } };
+  player.onReloadStart = duration => weapon.startReloadAnimation(duration);
+  player.onReloadComplete = () => weapon.cancelReloadAnimation();
+  player.onReloadCancel = () => weapon.cancelReloadAnimation();
+  function playKillSound(){try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;const c=window.killAudio||(window.killAudio=new C());if(c.state==='suspended')c.resume();const n=c.currentTime;[[880,0],[1175,.09],[1568,.18]].forEach(([hz,t])=>{const o=c.createOscillator(),g=c.createGain();o.type='triangle';o.frequency.setValueAtTime(hz,n+t);g.gain.setValueAtTime(.32,n+t);g.gain.exponentialRampToValueAtTime(.001,n+t+.22);o.connect(g);g.connect(c.destination);o.start(n+t);o.stop(n+t+.22);});}catch{}}
+weapon.onHit = (target, amount, killed, headshot=false) => { showDamageNumber(target.position, amount, headshot); if (killed) { playerKills++; playKillSound(); showElimination(); } };
   weapon.onScope = active => { scoped = active; document.getElementById('scopeBtn').classList.toggle('active', active); document.getElementById('crosshair').classList.toggle('scoped', active); };
   createBots();
   ui = new UI(player, game);
@@ -67,6 +123,7 @@ function init() {
   addEventListener('orientationchange', onResize);
   document.getElementById('enterBtn').addEventListener('click', enterLobby);
   document.getElementById('startBtn').addEventListener('click', startGame);
+  setupWeaponScreen();
   document.getElementById('backLobbyBtn').addEventListener('click', backToLobby);
   document.getElementById('playAgainBtn').addEventListener('click', startGame);
   document.getElementById('pauseBtn').addEventListener('click', togglePause);
@@ -78,7 +135,6 @@ function init() {
   document.getElementById('resumeBtn').addEventListener('click', e=>{e.preventDefault();if(gamePaused)togglePause();});
   document.getElementById('pauseLobbyBtn').addEventListener('click', e=>{e.preventDefault();backToLobby();});
   document.getElementById('mapSelect').addEventListener('change',e=>{selectedMap=e.target.value;});
-  document.querySelectorAll('.weapon-choice').forEach(btn=>btn.addEventListener('click',()=>{selectedWeapon=btn.dataset.weapon;document.querySelectorAll('.weapon-choice').forEach(b=>b.classList.toggle('active',b===btn));}));
   animate();
   updateOrientationNotice();
 }
@@ -124,6 +180,7 @@ async function startGame() {
   weapon.applyWeapon(selectedWeapon);
   menu.style.display = 'none';
   document.getElementById('matchResult').style.display='none';
+  ['minimap','topRightHUD','status','health','ammo','controls','crosshair','damageOverlay','respawnOverlay','message','damageNumbers'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.visibility='';});
   hud.style.display = 'block';
   gameRunning = true;
   gamePaused = false; document.getElementById('pauseOverlay').style.display='none'; document.getElementById('pauseBtn').textContent='Ⅱ';
@@ -140,18 +197,24 @@ async function startGame() {
 function endGame() {
   gameRunning = false;
   firing = false;
-  hud.style.display = 'none';
+  // HUD tetap menjadi parent overlay hasil; gameplay controls disembunyikan, layar tetap landscape.
+  hud.style.display = 'block';
+  ['minimap','topRightHUD','status','health','ammo','controls','crosshair','damageOverlay','respawnOverlay','message','damageNumbers'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.visibility='hidden';});
   const resultBox = document.getElementById('matchResult'); resultBox.style.display = 'flex';
   const won = blueScore > redScore;
   document.getElementById('resultTitle').textContent = won ? 'BLUE TEAM MENANG!' : blueScore < redScore ? 'KALAH!' : 'HASIL SERI!';
   document.getElementById('resultTitle').className = won ? 'win' : blueScore < redScore ? 'lose' : 'draw';
   document.getElementById('resultScore').textContent = `BLUE ${blueScore} — ${redScore} RED`;
-  try { if (document.exitFullscreen && document.fullscreenElement) document.exitFullscreen(); } catch {}
+    const kicker=document.querySelector('.result-kicker'); if(kicker) kicker.textContent='MATCH SELESAI • SKOR AKHIR';
+  // Jangan keluar fullscreen/orientasi saat hasil match muncul.
+  requestLandscape();
 }
 
 async function backToLobby(){
   gameRunning=false; gamePaused=false; firing=false; hud.style.display='none'; document.getElementById('pauseOverlay').style.display='none';
-  document.getElementById('matchResult').style.display='none'; menu.style.display='flex';
+  document.getElementById('matchResult').style.display='none';
+  ['minimap','topRightHUD','status','health','ammo','controls','crosshair','damageOverlay','respawnOverlay','message','damageNumbers'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.visibility='';});
+  menu.style.display='flex';
   try{if(document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();}catch{}
   await requestLandscape();
 }
@@ -202,7 +265,7 @@ function updateOrientationNotice() {
 
 function animate(now = performance.now()) {
   requestAnimationFrame(animate);
-  if (lobbyRenderer && !gameRunning) { lobbyCharacter.rotation.y += 0.008; lobbyRenderer.render(lobbyScene,lobbyCamera); }
+
   const dt = Math.min((now - lastFrame) / 1000, 0.05);
   lastFrame = now;
   update(dt);
@@ -210,7 +273,7 @@ function animate(now = performance.now()) {
 }
 
 function onResize() {
-  if (lobbyRenderer) { const c=document.getElementById('lobbyPreview'); const w=c.clientWidth||innerWidth*.45, h=c.clientHeight||innerHeight*.7; lobbyRenderer.setSize(w,h,false); lobbyCamera.aspect=w/h; lobbyCamera.updateProjectionMatrix(); }
+
   camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);

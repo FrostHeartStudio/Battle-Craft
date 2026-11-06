@@ -14,6 +14,8 @@ export class UI {
     this.reloadBtn = document.getElementById('reloadBtn');
     this.jumpBtn = document.getElementById('jumpBtn');
     this.scopeBtn = document.getElementById('scopeBtn');
+    this.healBtn = document.getElementById('healBtn');
+    this.healReadyAt = 0;
 
     this.mapCanvas = document.getElementById('mapCanvas');
     this.ctx = this.mapCanvas.getContext('2d');
@@ -205,6 +207,16 @@ export class UI {
 
     this.jumpBtn.addEventListener('pointerdown', e => { e.preventDefault(); this.player.jump(); });
     this.scopeBtn.addEventListener('pointerdown', e => { e.preventDefault(); this.game.toggleScope(); });
+
+    this.healBtn.addEventListener('pointerdown', e => {
+      e.preventDefault();
+      const now = performance.now();
+      if (now < this.healReadyAt || !this.player.alive || this.player.hp >= this.player.maxHP) return;
+      this.player.hp = Math.min(this.player.maxHP, this.player.hp + 20);
+      this.healReadyAt = now + 10000;
+      this.healBtn.disabled = true; this.healBtn.textContent = 'HEAL 10';
+      const tick = () => { const left = Math.ceil((this.healReadyAt-performance.now())/1000); if(left<=0){this.healBtn.disabled=false;this.healBtn.textContent='HEAL';} else {this.healBtn.textContent='HEAL '+left;requestAnimationFrame(tick);} }; requestAnimationFrame(tick);
+    });
 
     this.reloadBtn.addEventListener(
       'pointerdown',

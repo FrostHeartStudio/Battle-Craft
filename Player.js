@@ -12,7 +12,7 @@ export class Player {
     this.hp = 100;
     this.maxHP = 100;
 
-    this.speed = 10;
+    this.speed = 5;
     this.radius = 0.65;
 
     this.alive = true;
@@ -25,6 +25,11 @@ export class Player {
     this.weaponType = 'pistol';
 
     this.reloading = false;
+    this.reloadDuration = 2000;
+    this.reloadTimer = null;
+    this.onReloadStart = null;
+    this.onReloadComplete = null;
+    this.onReloadCancel = null;
 
     this.yaw = 0;
     this.pitch = 0;
@@ -56,11 +61,11 @@ export class Player {
     const bootMat = new THREE.MeshStandardMaterial({ color: 0x17191c, roughness: 0.9 });
     for (const x of [-0.18, 0.18]) {
       const leg = new THREE.Mesh(new THREE.CapsuleGeometry(0.075, 0.34, 4, 8), pantsMat);
-      leg.position.set(x, -0.48, -0.38); this.legs.add(leg);
+      leg.position.set(x, -0.52, -0.38); this.legs.add(leg);
       const boot = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.10, 0.25), bootMat);
-      boot.position.set(x, -0.73, -0.46); this.legs.add(boot);
+      boot.position.set(x, -0.77, -0.46); this.legs.add(boot);
     }
-    this.camera.add(this.legs);
+    this.camera.add(this.legs); this.walkPhase=0;
 
     this.respawn();
   }
@@ -69,6 +74,8 @@ export class Player {
     if (!this.alive) return;
 
     this.move(dt);
+    if(Math.abs(this.moveForward)+Math.abs(this.moveRight)>.05) this.walkPhase+=dt*10;
+    this.legs.children.forEach((part,i)=>{part.rotation.x=Math.sin(this.walkPhase+i*Math.PI)*.22;});
     this.verticalVelocity -= 22 * dt;
     this.position.y += this.verticalVelocity * dt;
     if (this.position.y <= 1.7) { this.position.y = 1.7; this.verticalVelocity = 0; this.grounded = true; }
@@ -158,7 +165,8 @@ export class Player {
 
   damage(amount, attackerTeam = 'red') {
     if (!this.alive) return false;
-
+    // Lompatan memberi dodge terhadap peluru selama tubuh masih airborne.
+    if (!this.grounded && this.position.y > 1.82) return false;
     this.hp -= amount;
     this.damageFlash = 0.22;
     this.cameraShake = 0.18;
@@ -167,6 +175,10 @@ export class Player {
     if (this.hp <= 0) {
       this.hp = 0;
       this.alive = false;
+      if (this.reloadTimer) clearTimeout(this.reloadTimer);
+      this.reloadTimer = null;
+      this.reloading = false;
+      if (this.onReloadCancel) this.onReloadCancel();
 
       this.moveForward = 0;
       this.moveRight = 0;
@@ -205,34 +217,36 @@ export class Player {
 
   reload() {
     if (
+      !this.alive ||
       this.reloading ||
-      this.ammo === this.maxAmmo ||
       this.ammo >= this.maxAmmo
     ) return false;
 
     this.reloading = true;
+    const duration = Math.max(500, this.reloadDuration || 2000);
     this.playReloadSound();
+    if (this.onReloadStart) this.onReloadStart(duration / 1000);
 
-    setTimeout(() => {
+    this.reloadTimer = setTimeout(() => {
+      this.reloadTimer = null;
       if (!this.alive) {
         this.reloading = false;
+        if (this.onReloadCancel) this.onReloadCancel();
         return;
       }
 
-      const needed = this.maxAmmo - this.ammo;
-      const amount = needed;
-      this.ammo += amount;
-
+      this.ammo = this.maxAmmo;
       this.reloading = false;
-    }, 1800);
+      if (this.onReloadComplete) this.onReloadComplete();
+    }, duration);
 
     return true;
   }
 
   playReloadSound() {
     try { const C=window.AudioContext||window.webkitAudioContext; if(!C)return; this.audio ||= new C(); if(this.audio.state==='suspended')this.audio.resume(); const c=this.audio,n=c.currentTime;
-      const osc=c.createOscillator(),g=c.createGain();osc.type='square';osc.frequency.setValueAtTime(720,n);osc.frequency.exponentialRampToValueAtTime(260,n+.12);g.gain.setValueAtTime(.07,n);g.gain.exponentialRampToValueAtTime(.001,n+.16);osc.connect(g);g.connect(c.destination);osc.start(n);osc.stop(n+.16);
-      const o=c.createOscillator(),gg=c.createGain();o.type='triangle';o.frequency.setValueAtTime(420,n+.22);o.frequency.exponentialRampToValueAtTime(900,n+.32);gg.gain.setValueAtTime(.05,n+.22);gg.gain.exponentialRampToValueAtTime(.001,n+.38);o.connect(gg);gg.connect(c.destination);o.start(n+.22);o.stop(n+.38);
+      const osc=c.createOscillator(),g=c.createGain();osc.type='square';osc.frequency.setValueAtTime(720,n);osc.frequency.exponentialRampToValueAtTime(260,n+.12);g.gain.setValueAtTime(.22,n);g.gain.exponentialRampToValueAtTime(.001,n+.16);osc.connect(g);g.connect(c.destination);osc.start(n);osc.stop(n+.16);
+      const o=c.createOscillator(),gg=c.createGain();o.type='triangle';o.frequency.setValueAtTime(420,n+.22);o.frequency.exponentialRampToValueAtTime(900,n+.32);gg.gain.setValueAtTime(.16,n+.22);gg.gain.exponentialRampToValueAtTime(.001,n+.38);o.connect(gg);gg.connect(c.destination);o.start(n+.22);o.stop(n+.38);
     } catch {}
   }
 
@@ -252,3 +266,4 @@ export class Player {
     return direction.normalize();
   }
 }
+

@@ -46,20 +46,35 @@ function createBox(scene, x, y, z, w, h, d, color) {
   return mesh;
 }
 
+function createPrismRoof(scene, x, y, z, w, d, color) {
+  const h = Math.max(1.8, w * 0.32), a=w/2, b=d/2;
+  const v=[-a,0,-b, a,0,-b, 0,h,-b, -a,0,b, a,0,b, 0,h,b];
+  const idx=[0,1,2, 3,5,4, 0,3,4, 0,4,1, 1,4,5, 1,5,2, 2,5,3, 2,3,0];
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(v,3));g.setIndex(idx);g.computeVertexNormals();
+  const m=new THREE.Mesh(g,new THREE.MeshStandardMaterial({color,roughness:.8,side:THREE.DoubleSide}));
+  m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;m.userData.isMapObject=true;scene.add(m);return m;
+}
+
 export function createMap(scene, variant = 'city') {
   for (const obj of [...scene.children]) if (obj.userData?.isMapObject) { scene.remove(obj); obj.geometry?.dispose(); }
   obstacles.length = 0;
   colliders.length = 0;
 
   // TANAH
-  const groundColor = variant === 'forest' ? 0x244a2b : variant === 'desert' ? 0xd4ad69 : 0x555f68;
-  const ground = new THREE.Mesh(
-    new THREE.PlaneGeometry(MAP_SIZE, MAP_SIZE),
-    new THREE.MeshStandardMaterial({
-      color: groundColor,
-      roughness: 1
-    })
-  );
+  const groundColor = variant === 'forest' ? 0x244a2b : variant === 'desert' ? 0xd4ad69 : variant === 'snow' ? 0xdce8f2 : variant === 'neon' ? 0x20283b : 0x555f68;
+  const groundGeometry = new THREE.PlaneGeometry(MAP_SIZE, MAP_SIZE, 100, 100);
+  // Variasi warna tanah halus supaya arena tidak terlihat datar/polos.
+  const groundPalette = variant === 'forest' ? [0x294f2d,0x356238,0x426d3e] : variant === 'desert' ? [0xc6a15f,0xd8b875,0xe3c887] : variant === 'snow' ? [0xcbd9e8,0xe5eef8,0xf5f9ff] : variant === 'neon' ? [0x182238,0x26334f,0x344263] : [0x505a63,0x626d76,0x737d85];
+  const groundColors = [];
+  const positions = groundGeometry.attributes.position;
+  for (let i=0;i<positions.count;i++) {
+    const x=positions.getX(i), z=positions.getY(i);
+    const n=(Math.sin(x*.13)*Math.cos(z*.11)+Math.sin((x+z)*.07))*.5 + (Math.random()-.5)*.18;
+    const c=new THREE.Color(groundPalette[n<-.18?0:n>.2?2:1]);
+    groundColors.push(c.r,c.g,c.b);
+  }
+  groundGeometry.setAttribute('color',new THREE.Float32BufferAttribute(groundColors,3));
+  const ground = new THREE.Mesh(groundGeometry,new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:1}));
 
   ground.rotation.x = -Math.PI / 2;
   ground.position.y = -0.1;
@@ -99,6 +114,14 @@ export function createMap(scene, variant = 'city') {
     [-75,-75,24,12,0xb89a69],[-32,-92,12,24,0xc4a879],[55,-75,26,13,0xa98a5d],[88,-35,14,25,0xc4a879],
     [-85,22,25,14,0xb89a69],[-45,58,14,26,0xc4a879],[5,82,26,14,0xa98a5d],[65,55,24,12,0xb89a69],
     [82,12,12,24,0xc4a879],[-8,-38,22,12,0xa98a5d],[35,2,12,22,0xb89a69],[-30,92,22,12,0xc4a879]
+  ] : variant === 'snow' ? [
+    [-82,-62,18,15,0x9fb8d0],[-48,-88,14,20,0xc4d5e5],[42,-82,20,14,0x8da9c5],[83,-48,15,20,0xb5c9dc],
+    [-88,8,20,14,0x9fb8d0],[-45,38,15,20,0xc4d5e5],[5,78,20,14,0x8da9c5],[62,52,15,20,0xb5c9dc],
+    [88,5,20,14,0x9fb8d0],[-8,-35,14,20,0xc4d5e5],[35,12,20,14,0x8da9c5],[-28,92,18,14,0xb5c9dc]
+  ] : variant === 'neon' ? [
+    [-82,-62,16,18,0x344b78],[-48,-88,20,13,0x553c83],[42,-82,14,20,0x176c79],[83,-48,20,14,0x713a70],
+    [-88,8,20,14,0x344b78],[-45,38,14,20,0x553c83],[5,78,20,14,0x176c79],[62,52,14,20,0x713a70],
+    [88,5,20,14,0x344b78],[-8,-35,14,20,0x553c83],[35,12,20,14,0x176c79],[-28,92,20,14,0x713a70]
   ] : [
     [-60,-70,18,16,0x858b91],[-30,-80,14,20,0x8b735c],[60,-70,20,16,0x727b86],[30,-80,18,18,0x9a8066],
     [-70,-30,20,18,0x8a9299],[70,-30,18,20,0x8d7563],[-60,60,18,18,0x858b91],[-30,70,20,16,0x9a8066],
@@ -116,12 +139,8 @@ export function createMap(scene, variant = 'city') {
     obstacles.push(building);
     addCollider(x, z, w, d);
 
-    // ATAP
-    createBox(
-      scene, x, h + 0.3, z,
-      w + 1, 0.6, d + 1,
-      0x41464d
-    );
+    // ATAP prisma segitiga (bukan lagi kotak datar)
+    createPrismRoof(scene, x, h, z, w + 1, d + 1, 0x41464d);
 
     // JENDELA SEDERHANA
     for (let side = -1; side <= 1; side += 2) {
@@ -157,7 +176,7 @@ export function createMap(scene, variant = 'city') {
   // POHON
   const treePositions = [];
 
-  const treeCount = variant === 'forest' ? 125 : variant === 'desert' ? 12 : 65;
+  const treeCount = variant === 'forest' ? 125 : variant === 'desert' || variant === 'snow' || variant === 'neon' ? 12 : 65;
   for (let i = 0; i < treeCount; i++) {
     let x, z;
 
@@ -205,17 +224,13 @@ export function createMap(scene, variant = 'city') {
 
     if (Math.abs(x) < 15 || Math.abs(z) < 15) continue;
 
-    const rock = createBox(
-      scene,
-      x, 0.8, z,
-      2 + Math.random() * 3,
-      1.5,
-      2 + Math.random() * 3,
-      variant === 'desert' ? 0x9a8665 : variant === 'forest' ? 0x555e50 : 0x686b68
-    );
-
-    obstacles.push(rock);
-    addCollider(x, z, rock.geometry.parameters.width, rock.geometry.parameters.depth);
+    const rw=2+Math.random()*3, rd=2+Math.random()*3, rh=1.1+Math.random()*1.1;
+    const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(1,1),new THREE.MeshStandardMaterial({
+      color:variant==='desert'?0xa99776:variant==='forest'?0x626e5c:0x777f86,
+      roughness:.94, flatShading:true
+    }));
+    rock.scale.set(rw*.55,rh*.65,rd*.55);rock.position.set(x,rh*.55,z);rock.rotation.set(0,Math.random()*Math.PI,0);rock.castShadow=true;rock.receiveShadow=true;rock.userData.isMapObject=true;scene.add(rock);
+    obstacles.push(rock);addCollider(x,z,rw*.62,rd*.62);
   }
 
   // BATAS MAP
@@ -237,7 +252,7 @@ export function createMap(scene, variant = 'city') {
 
   scene.add(sun);
 
-  const hemi = new THREE.HemisphereLight(0xbad7ff, variant === 'desert' ? 0x80643b : 0x46502d, 1.2); hemi.userData.isMapObject = true; scene.add(hemi);
+  const hemi = new THREE.HemisphereLight(0xbad7ff, variant === 'desert' ? 0x80643b : variant === 'snow' ? 0x7189a5 : variant === 'neon' ? 0x30204c : 0x46502d, 1.2); hemi.userData.isMapObject = true; scene.add(hemi);
 }
 
 // COLLISION PLAYER
